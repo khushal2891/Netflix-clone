@@ -231,6 +231,7 @@ const array = [
 const buttons = document.querySelectorAll("button");
 const caret = document.querySelector(".fa-caret-down");
 const catalogue = document.querySelector(".catalogue"); //parent to all carousels on document
+const full = document.documentElement; // used for full screen.
 const header = document.querySelector("header");
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent); //checks if mobile device 
 const showcase = document.querySelector(".showcase"); //background where video displays
@@ -245,7 +246,7 @@ let opaque = 1;
 let opaqueInt;
 let playButton = document.getElementById("play-button"); //play || pause
 let playIcon = document.getElementById("play-icon"); //play || pause ,image
-let selection; //will hold array of class selection items
+let selection; //will hold array of class .selection items
 let showcaseImg = document.querySelector(".showcase-img"); //for video title logos
 let trailers; //for video source selection
 
@@ -356,36 +357,28 @@ function display() {
 }
 
 
-//seems not to work on phones. Adding webpage to phone homescreen is a substitute
-function fullscreen() {
+function toggleFullScreen(web) {
+    let requestMethod = web.requestFullScreen || web.webkitRequestFullScreen || web.mozRequestFullScreen || web.msRequestFullScreen;
+    let cancelMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
 
-    if(document.fullscreenElement) { //if currently in full screen mode
-        
-        if (document.exitFullscreen) {
-            document.exitFullscreen(); //Exit full screen mode
-        } else if (document.mozCancelFullScreen) { //Firefox
-            document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) { //Chrome, Safari & Opera
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { //IE/Edge 
-        document.msExitFullscreen();
+    // Check if we're already in fullscreen mode
+    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) { 
+        if (cancelMethod) { // Exit fullscreen mode
+            cancelMethod.call(document);
         }
-    
-    } else { //Not in full screen mode
-        
-        const elem = document.documentElement; //Get the document element      
-    
-        if(elem.requestFullscreen) {
-            elem.requestFullscreen(); //Make the website go full screen
-        } else if (elem.mozRequestFullScreen) { //Firefox
-            elem.mozRequestFullScreen();
-        } else if (elem.webkitRequestFullscreen) { //Chrome, Safari & Opera 
-            elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { //IE/Edge 
-            elem.msRequestFullscreen();
+
+    } else { // Enter fullscreen mode
+        if (requestMethod) {
+            requestMethod.call(web);
+        } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+            let wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
         }
     }
 }
+
 
 
 //Returns a random number within a chosen range
@@ -529,7 +522,7 @@ function viewStyle() {
 
 caret.addEventListener("click", function() {
 
-    fullscreen();
+    toggleFullScreen(full);
 });
 
 showcase.addEventListener("click", function() {
@@ -539,7 +532,7 @@ showcase.addEventListener("click", function() {
 
 toggle.addEventListener("click", function() {
 
-    fullscreen();
+    toggleFullScreen(full);
 });
 
 
@@ -644,7 +637,7 @@ window.addEventListener("mousemove", function() {
 
 
 window.addEventListener("resize", function() {
-        
+    
     header.style.transition = "0s ease-in-out 0ms"; //header width changes occur fast on screen resize
     
     //timeout fixes a bug on mobile 
